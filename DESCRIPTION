@@ -1,0 +1,18 @@
+Package: minicity
+Type: Compendium
+Title: Minicity
+Version: 0.0.1
+Authors@R: c(person("Knut", 
+                    "Overbye", 
+                    email = "knut.overbye@psykologi.uio.no", 
+                    role = c("aut", "cre"),
+                    comment = c(ORCID = "")))
+Description: Add a description of the project here
+    Continue on a second line, starting with four spaces.
+License: Remember to add a licence!
+Encoding: UTF-8
+RoxygenNote: 7.1.1
+Depends: R (>= 3.5.0)
+LazyData: true
+LazyDataCompression: xz
+VignetteBuilder: knitr
