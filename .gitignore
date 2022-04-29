@@ -1,3 +1,26 @@
-data
-.Rproj.user
+# Remove lines as needed to easily add data again.
+# If you only want to add a single file within an
+# ignored folder, you can force add that specific
+# file, and still ignore the remaining folder content
+# by default.
 
+# ignore folder with potential data
+data/
+results/
+
+# ignore common non-text files that can inflate repo size
+figures/*png
+figures/*pdf
+figures/*tiff
+figures/*jpg
+figures/*jpeg
+docs/*pdf
+docs/*.doc
+docs/*.docx
+
+# ignore R stuff
+.Rhistory
+.Rproj.user/
+
+# ignore mac hidden file
+**.DS_Store

@@ -3,9 +3,15 @@
 
 library(tidyverse)
 library(here)
+source(here("scripts","add_check_digit.R"))
 
 # Find all event logs in data
 logs <- list.files(path = here("data"), recursive = TRUE, pattern = "*Events.csv")
+
+# Import NOAS IDs
+noas_ids <- readr::read_tsv(here("data","ids.tsv"))
+
+#noas_ids %>% filter(subject_ids < "1700042") TODO DELETE
 
 # Initialize dataframe to be used for results
 minidata <- tribble(
@@ -57,9 +63,17 @@ for (log in 1: length(logs))
   # Find ID in log and convert to project ID format
   short_id <- current_log[[1,1]]
   long_id <- 1700000 + round(short_id / 1000) + (short_id %% 1000) * 10
+  subject_id <- add_check_digit(long_id)
+  
+  has_ctrl <- FALSE
+  no_ctrl <- FALSE
+  if (dim(noas_ids %>% filter(subject_ids == long_id))[1] == 1) {no_ctrl <- TRUE}
+  if (dim(noas_ids %>% filter(subject_ids == subject_id))[1] == 1) {has_ctrl <- TRUE}
+  if (no_ctrl && has_ctrl && (long_id != subject_id)){print("WARNING: ID duplicate")}
+  if (no_ctrl && !has_ctrl){subject_id <- long_id}
   
   # Add current log's data as a row to the output dataframe
-  minidata <- minidata %>% add_row(subject_id = long_id, project_id = "S2C",wave_code = wave,
+  minidata <- minidata %>% add_row(subject_id = subject_id, project_id = "S2C",wave_code = wave,
                                    target_hits = current_log_targets, dfp_mean = current_overshoot_mean[[1]],
                                    dfp_median = current_overshoot_median[[1]],dfp_std = current_overshoot_sd[[1]])
 }
