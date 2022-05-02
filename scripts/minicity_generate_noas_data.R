@@ -10,8 +10,7 @@ logs <- list.files(path = here("data"), recursive = TRUE, pattern = "*Events.csv
 
 # Import NOAS IDs
 noas_ids <- readr::read_tsv(here("data","ids.tsv"))
-
-#noas_ids %>% filter(subject_ids < "1700042") TODO DELETE
+last_id_wo_ctrl <- 62
 
 # Initialize dataframe to be used for results
 minidata <- tribble(
@@ -50,26 +49,39 @@ for (log in 1: length(logs))
   # A bit hacky, but the info is not stored in the log itself
   path_split<-strsplit(logs[log],split="/")[[1]]
   
-  if (!is.na(match("Week10",path_split))){ # if path contains a "Week10" folder, set wave to 2 
+  if (!is.na(match("Wave_01",path_split))){ # if path contains a "Wave_01" folder, set wave to 1
+    wave <- "1"
+  } else if (!is.na(match("Wave_02",path_split))){
     wave <- "2"
-  } else if (!is.na(match("Week1",path_split))){ # if path contains a "Week1" folder, set wave to 1
-      wave <- "1"
+  } else if (!is.na(match("Wave_03",path_split))){
+    wave <- "3"
+  } else if (!is.na(match("Wave_04",path_split))){
+    wave <- "4"
   } else {
-      print(paste("Warning: Did not find Week1 or Week10 folder in log ",logs[log],". Logging wave as NA. Check folder structure (see Readme)", sep = ""))
-      wave <- "NA"
-      #next
+    print(paste("Warning: Did not find Wave folder in log ",logs[log],". Logging wave as NA. Check folder structure (see Readme)", sep = ""))
+    wave <- "NA"
   }
   
   # Find ID in log and convert to project ID format
-  short_id <- current_log[[1,1]]
-  long_id <- 1700000 + round(short_id / 1000) + (short_id %% 1000) * 10
-  subject_id <- add_check_digit(long_id)
+  log_id <- current_log[[1,1]]
+  if(nchar(log_id) == 4){
+    long_id <- 1700000 + round(log_id / 1000) + (log_id %% 1000) * 10
+  } else if(nchar(log_id) == 7) {
+    long_id <- log_id
+  } else {
+    long_id <- log_id
+    print(paste("WARNING: Incorrect ID format ",log_id," for log ", logs[log]))
+  }
   
+  subject_id <- add_check_digit(long_id)
   has_ctrl <- FALSE
   no_ctrl <- FALSE
+  # Correct for subjects without control digits.
+  # TODO: Pretty inelegant. Consider refactor
   if (dim(noas_ids %>% filter(subject_ids == long_id))[1] == 1) {no_ctrl <- TRUE}
   if (dim(noas_ids %>% filter(subject_ids == subject_id))[1] == 1) {has_ctrl <- TRUE}
-  if (no_ctrl && has_ctrl && (long_id != subject_id)){print("WARNING: ID duplicate")}
+  if (no_ctrl && has_ctrl && (long_id != subject_id)){print(paste("WARNING: ID duplicate: ",long_id))}
+  if (!no_ctrl && !has_ctrl){print(paste("WARNING: Missing ID in list: ",long_id))}
   if (no_ctrl && !has_ctrl){subject_id <- long_id}
   
   # Add current log's data as a row to the output dataframe
