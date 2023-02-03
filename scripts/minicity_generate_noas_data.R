@@ -78,8 +78,8 @@ for (log in 1: length(logs))
   no_ctrl <- FALSE
   # Correct for subjects without control digits.
   # TODO: Pretty inelegant. Consider refactor
-  if (dim(noas_ids %>% filter(subject_ids == long_id))[1] == 1) {no_ctrl <- TRUE}
-  if (dim(noas_ids %>% filter(subject_ids == subject_id))[1] == 1) {has_ctrl <- TRUE}
+  if (dim(noas_ids %>% filter(noas_ids == long_id))[1] == 1) {no_ctrl <- TRUE}
+  if (dim(noas_ids %>% filter(noas_ids == subject_id))[1] == 1) {has_ctrl <- TRUE}
   if (no_ctrl && has_ctrl && (long_id != subject_id)){print(paste("WARNING: ID duplicate: ",long_id))}
   if (!no_ctrl && !has_ctrl){print(paste("WARNING: Missing ID in list: ",long_id))}
   if (no_ctrl && !has_ctrl){subject_id <- long_id}
