@@ -14,7 +14,7 @@ last_id_wo_ctrl <- 62
 
 # Initialize dataframe to be used for results
 minidata <- tribble(
-  ~subject_id, ~project_id, ~wave_code, ~target_hits, ~dfp_mean, ~dfp_median, ~dfp_std, ~mini_version
+  ~subject_id, ~project_id, ~wave_code, ~target_hits, ~dfp_mean, ~dfp_median, ~dfp_std, ~datetime, ~mini_version
 )
 
 # Loop through all event logs
@@ -72,10 +72,22 @@ for (log in 1: length(logs))
     long_id <- log_id
     print(paste("WARNING: Incorrect ID format ",log_id," for log ", logs[log]))
   }
-    
+  
   # Log which version of MiniCity was used for this wave
   version_index <- tail(unlist(gregexpr('i', logs[log])), n=1)+1
   version <- substr(logs[log],version_index,version_index)
+  
+  # log datetime
+  time_start_index <- unlist(gregexpr('_', path_split[2]))[1]+1
+  time_end_index <- unlist(gregexpr('v', path_split[2]))[1]-2
+  datetime <- substr(path_split[2],time_start_index,time_end_index)
+  
+  format_date_time <- function(date_time) {
+    dt <- as.POSIXct(strptime(date_time, format = "%Y_%m_%d_%H_%M_%S"))
+    format(dt, format = "%Y_%m_%d_%H_%M_%S")
+  }
+  
+  datetime <- format_date_time(datetime)
   
   subject_id <- add_check_digit(long_id)
   has_ctrl <- FALSE
@@ -92,7 +104,7 @@ for (log in 1: length(logs))
   minidata <- minidata %>% add_row(subject_id = subject_id, project_id = "S2C",wave_code = wave,
                                    target_hits = current_log_targets, dfp_mean = current_overshoot_mean[[1]],
                                    dfp_median = current_overshoot_median[[1]],dfp_std = current_overshoot_sd[[1]],
-                                   mini_version = version)
+                                   datetime = datetime, mini_version = version)
 }
 
 # Write data to results
